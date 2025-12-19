@@ -1,37 +1,44 @@
+
+
 import pandas as pd
+n = int(input("Enter number of students: "))
 
-data = {
-    "Name": ["Harsha", "Teja", "Jama", "Madhu", "Maddy"],
-    "Maths": [89, 77, 90, 59, 66],
-    "Physics": [99, 90, 88, 77, 66],
-    "Chemistry": [90, 100, 77, 56, 88]
-}
-df = pd.DataFrame(data)
+names = []
+maths = []
+physics = []
+chemistry = []
 
-print("ORIGINAL DATA:")
-print(df)
-print("\n-----------------------------\n")
+for i in range(n):
+    print(f"\nEnter details for Student {i+1}")
+    name = input("Name: ")
+    m = int(input("Maths marks (out of 100): "))
+    p = int(input("Physics marks (out of 100): "))
+    c = int(input("Chemistry marks (out of 100): "))
 
+    names.append(name)
+    maths.append(m)
+    physics.append(p)
+    chemistry.append(c)
 
-df["Total"] = df[["Maths", "Physics", "Chemistry"]].sum(axis=1)
-df["Average"] = df[["Maths", "Physics", "Chemistry"]].mean(axis=1)
-def result_status(row):
-    if row["Maths"] < 50 or row["Physics"] < 50 or row["Chemistry"] < 50:
-        return "Fail"
-    else:
-        return "Pass"
+df = pd.DataFrame({
+    "Name": names,
+    "Maths": maths,
+    "Physics": physics,
+    "Chemistry": chemistry
+})
 
-df["Result"] = df.apply(result_status, axis=1)
-df["CGPA"] = (df["Average"] / 10).round(2)
-
-df["Rank"] = df[df["Result"] == "Pass"]["Total"].rank(
-    ascending=False, method="dense"
+df["Total"] = df["Maths"] + df["Physics"] + df["Chemistry"]
+df["Average"] = df["Total"] / 3
+df["CGPA"] = df["Average"] / 10
+df["Result"] = df.apply(
+    lambda row: "Fail" if (row["Maths"] < 50 or row["Physics"] < 50 or row["Chemistry"] < 50)
+    else "Pass",
+    axis=1
 )
-df = df.sort_values(by="Rank")
+df["Rank"] = df["Total"].rank(method="dense", ascending=False).astype(int)
+df = df.sort_values("Rank")
 
-print("FINAL RESULT WITH TOTAL, CGPA, RESULT & RANK:")
-print(df)
+df.to_csv("student_ranking.csv", index=False)
 
-df.to_csv("student_results.csv", index=False)
-print("\nResult saved as student_results.csv")
-
+print("\n📊 FINAL STUDENT RANKING TABLE\n")
+print(df.to_string(index=False))
